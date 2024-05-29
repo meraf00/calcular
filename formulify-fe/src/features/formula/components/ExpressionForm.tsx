@@ -72,7 +72,9 @@ export default function ExpressionForm({
         validateVariableName(name.slice(0, length - 1))
       ) {
         setValue('variables', [
-          ...getValues().variables,
+          ...getValues().variables.filter(
+            (v) => v !== name.slice(0, length - 1)
+          ),
           name.slice(0, length - 1),
         ]);
         e.currentTarget.value = '';
@@ -105,19 +107,6 @@ export default function ExpressionForm({
         )}
       />
 
-      <Controller
-        name="formula"
-        control={control}
-        render={({ field }) => (
-          <TextInput
-            label="Formula"
-            placeholder="Formula"
-            {...field}
-            required
-          />
-        )}
-      />
-
       <TextInput
         label="Variables"
         placeholder="Variable"
@@ -138,6 +127,19 @@ export default function ExpressionForm({
           />
         )}
       ></Controller>
+
+      <Controller
+        name="formula"
+        control={control}
+        render={({ field }) => (
+          <TextInput
+            label="Formula"
+            placeholder="Formula"
+            {...field}
+            required
+          />
+        )}
+      />
 
       <Button type="submit" mt="sm">
         Save
