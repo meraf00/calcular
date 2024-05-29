@@ -10,12 +10,14 @@ import {
 import { VariableService } from './variable.service';
 import { CreateVariableDto } from './dto/create-variable.dto';
 import { UpdateVariableDto } from './dto/update-variable.dto';
+import { ApiBody } from '@nestjs/swagger';
 
 @Controller('variable')
 export class VariableController {
   constructor(private readonly variableService: VariableService) {}
 
   @Post()
+  @ApiBody({ type: CreateVariableDto })
   create(@Body() createVariableDto: CreateVariableDto) {
     return this.variableService.create(createVariableDto);
   }
@@ -31,6 +33,7 @@ export class VariableController {
   }
 
   @Patch(':id')
+  @ApiBody({ type: UpdateVariableDto })
   update(
     @Param('id') id: string,
     @Body() updateVariableDto: UpdateVariableDto,
