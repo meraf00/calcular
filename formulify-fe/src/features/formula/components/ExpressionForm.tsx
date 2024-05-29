@@ -3,10 +3,11 @@
 import { Button, Chip, MultiSelect, TextInput, rem } from '@mantine/core';
 import { Controller, SubmitHandler, set, useForm } from 'react-hook-form';
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
-import { Expression } from '@/lib/models/expression';
+import { Expression, Parser } from '@/lib/models/expression';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { IconX } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 
 export interface ExpressionFormProps {
   expression?: Expression;
@@ -79,8 +80,23 @@ export default function ExpressionForm({
     }
   };
 
+  const validateAndSubmit = (formData: ExpressionFormData) => {
+    const parser = new Parser(formData.formula);
+
+    const errorMessage = parser.validate([...formData.variables]);
+
+    if (errorMessage != null) {
+      notifications.show({
+        title: 'Invalid formula',
+        message: errorMessage,
+        color: 'red',
+      });
+    }
+    onSubmit(getValues());
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+    <form onSubmit={handleSubmit(validateAndSubmit)} className="w-full">
       <Controller
         name="name"
         control={control}
@@ -106,7 +122,6 @@ export default function ExpressionForm({
         label="Variables"
         placeholder="Variable"
         onChange={handleVariableInputChange}
-        required
       />
 
       <Controller

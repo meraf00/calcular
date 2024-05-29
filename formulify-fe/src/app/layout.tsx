@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 import { ColorSchemeScript } from '@mantine/core';
 
 import Providers from './providers';

@@ -152,6 +152,10 @@ export class Parser {
       if (token.type === TokenType.NUMBER) {
         stack.push(parseFloat(token.literal));
       } else {
+        if (stack.length < 2) {
+          throw new Error('Invalid expression');
+        }
+
         const b = stack.pop()!;
         const a = stack.pop()!;
 
@@ -172,7 +176,7 @@ export class Parser {
     return stack.pop();
   }
 
-  validate(): string | null {
+  validate(expectedVariables: string[]): string | null {
     const variables: { [key: string]: number } = {};
     try {
       const tokens: Token[] = this._tokenize();
@@ -180,6 +184,16 @@ export class Parser {
       for (const token of tokens) {
         if (token.type === TokenType.IDENT) {
           variables[token.literal] = 1;
+
+          if (!expectedVariables.includes(token.literal)) {
+            return `Unexpected variable ${token.literal}`;
+          }
+        }
+      }
+
+      for (const variable of expectedVariables) {
+        if (!variables[variable]) {
+          return `Variable ${variable} is not used in the formula`;
         }
       }
 
@@ -208,7 +222,7 @@ export class Parser {
       // if token is a number
       if (token.type === TokenType.IDENT) {
         if (!context[token.literal]) {
-          throw new Error(`Variable ${token.literal} not found`);
+          throw new Error(`Variable ${token.literal} is not found`);
         } else {
           queue.push(new Token(TokenType.NUMBER, `${context[token.literal]}`));
         }
@@ -275,7 +289,7 @@ export const test = () => {
     tokens.push(token);
   }
 
-  const p = new Parser('1 + a 3.4');
+  const p = new Parser('+');
   // console.log(p.evaluate({ a: 1, b: 2 }));
-  console.log(p.validate());
+  console.log(p.validate([]));
 };
