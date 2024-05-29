@@ -5,9 +5,6 @@
 @media (prefers-color-scheme: dark) {
 }
 
-body {
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;

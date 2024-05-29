@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
 
 import './globals.css';
-import '@mantine/core/styles.css';
 
+import '@mantine/core/styles.css';
+import { ColorSchemeScript } from '@mantine/core';
+
+import Providers from './providers';
+import { cn } from '@/utils/cn';
 import { quicksand } from '@/utils/fonts';
 
 export const metadata: Metadata = {
@@ -18,7 +22,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={quicksand.className}>{children}</body>
+      <head>
+        <ColorSchemeScript />
+      </head>
+      <body className={cn(quicksand.className, 'relative')}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
