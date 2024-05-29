@@ -5,6 +5,7 @@ import { ExpressionModule } from './expression/expression.module';
 import { AppDataSource } from './data-source';
 import { Expression } from './expression/entities/expression.entity';
 import { Variable } from './variable/entities/variable.entity';
+import { EvaluationModule } from './evaluation/evaluation.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { Variable } from './variable/entities/variable.entity';
     }),
     VariableModule,
     ExpressionModule,
+    EvaluationModule,
   ],
 })
 export class AppModule {}
