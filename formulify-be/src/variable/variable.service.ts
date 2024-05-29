@@ -1,26 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVariableDto } from './dto/create-variable.dto';
 import { UpdateVariableDto } from './dto/update-variable.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Variable } from './entities/variable.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class VariableService {
-  create(createVariableDto: CreateVariableDto) {
-    return 'This action adds a new variable';
+  constructor(
+    @InjectRepository(Variable)
+    private readonly variableRepository: Repository<Variable>,
+  ) {}
+
+  async create(createVariableDto: CreateVariableDto) {
+    const newVariable = await this.variableRepository.create(createVariableDto);
+    return await this.variableRepository.save(newVariable);
   }
 
-  findAll() {
-    return `This action returns all variable`;
+  async findAll() {
+    return await this.variableRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} variable`;
+  async findOne(id: string) {
+    const variable = await this.variableRepository.findOneBy({ id });
+    if (!variable) {
+      throw new NotFoundException(`Variable with id ${id} not found`);
+    }
+    return variable;
   }
 
-  update(id: number, updateVariableDto: UpdateVariableDto) {
-    return `This action updates a #${id} variable`;
+  async update(id: string, updateVariableDto: UpdateVariableDto) {
+    const variable = await this.variableRepository.findOneByOrFail({ id });
+    return await this.variableRepository.update(variable.id, updateVariableDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} variable`;
+  async remove(id: string) {
+    return await this.variableRepository.delete(id);
   }
 }

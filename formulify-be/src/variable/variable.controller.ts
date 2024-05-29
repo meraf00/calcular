@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { VariableService } from './variable.service';
 import { CreateVariableDto } from './dto/create-variable.dto';
 import { UpdateVariableDto } from './dto/update-variable.dto';
@@ -19,16 +27,19 @@ export class VariableController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.variableService.findOne(+id);
+    return this.variableService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVariableDto: UpdateVariableDto) {
-    return this.variableService.update(+id, updateVariableDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateVariableDto: UpdateVariableDto,
+  ) {
+    return this.variableService.update(id, updateVariableDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.variableService.remove(+id);
+    return this.variableService.remove(id);
   }
 }
