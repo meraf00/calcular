@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { VariableService } from './variable.service';
 import { VariableController } from './variable.controller';
-import { Type } from 'class-transformer';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Variable } from './entities/variable.entity';
 
@@ -9,5 +8,6 @@ import { Variable } from './entities/variable.entity';
   imports: [TypeOrmModule.forFeature([Variable])],
   controllers: [VariableController],
   providers: [VariableService],
+  exports: [VariableService],
 })
 export class VariableModule {}
