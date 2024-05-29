@@ -9,5 +9,6 @@ import { Expression } from './entities/expression.entity';
   imports: [TypeOrmModule.forFeature([Expression])],
   controllers: [ExpressionController],
   providers: [ExpressionService],
+  exports: [ExpressionService],
 })
 export class ExpressionModule {}

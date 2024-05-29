@@ -10,12 +10,14 @@ import {
 import { ExpressionService } from './expression.service';
 import { CreateExpressionDto } from './dto/create-expression.dto';
 import { UpdateExpressionDto } from './dto/update-expression.dto';
+import { ApiBody } from '@nestjs/swagger';
 
 @Controller('expression')
 export class ExpressionController {
   constructor(private readonly expressionService: ExpressionService) {}
 
   @Post()
+  @ApiBody({ type: CreateExpressionDto })
   create(@Body() createExpressionDto: CreateExpressionDto) {
     return this.expressionService.create(createExpressionDto);
   }
@@ -31,6 +33,7 @@ export class ExpressionController {
   }
 
   @Patch(':id')
+  @ApiBody({ type: UpdateExpressionDto })
   update(
     @Param('id') id: string,
     @Body() updateExpressionDto: UpdateExpressionDto,
