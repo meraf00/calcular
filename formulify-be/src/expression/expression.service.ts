@@ -4,26 +4,49 @@ import { UpdateExpressionDto } from './dto/update-expression.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Expression } from './entities/expression.entity';
 import { Repository } from 'typeorm';
+import { VariableService } from 'src/variable/variable.service';
 
 @Injectable()
 export class ExpressionService {
   constructor(
     @InjectRepository(Expression)
     private expressionRepository: Repository<Expression>,
+    private readonly variableService: VariableService,
   ) {}
 
   async create(createExpressionDto: CreateExpressionDto) {
-    const newExpression =
-      await this.expressionRepository.create(createExpressionDto);
-    return await this.expressionRepository.save(newExpression);
+    const newExpression = this.expressionRepository.create({
+      ...createExpressionDto,
+      variables: [],
+    });
+
+    const expression = await this.expressionRepository.save(newExpression);
+
+    const variables = createExpressionDto.variables.map(async (variable) => {
+      return await this.variableService.create({
+        name: variable,
+        expressionId: expression.id,
+      });
+    });
+
+    return { ...expression, variables: await Promise.all(variables) };
   }
 
   async findAll() {
-    return await this.expressionRepository.find();
+    return await this.expressionRepository.find({
+      relations: {
+        variables: true,
+      },
+    });
   }
 
   async findOne(id: string) {
-    const expression = await this.expressionRepository.findOneBy({ id });
+    const expression = await this.expressionRepository.findOne({
+      where: { id },
+      relations: {
+        variables: true,
+      },
+    });
     if (!expression) {
       throw new NotFoundException(`No expression found with id ${id}`);
     }
@@ -32,10 +55,12 @@ export class ExpressionService {
 
   async update(id: string, updateExpressionDto: UpdateExpressionDto) {
     const expression = await this.expressionRepository.findOneByOrFail({ id });
-    return await this.expressionRepository.update(
-      expression.id,
-      updateExpressionDto,
-    );
+    return await this.expressionRepository.update(expression.id, {
+      ...updateExpressionDto,
+      variables: updateExpressionDto.variables.map((variableId) => ({
+        id: variableId,
+      })),
+    });
   }
 
   async remove(id: string) {
