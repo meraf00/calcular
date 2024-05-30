@@ -13,7 +13,7 @@ export class VariableService {
   ) {}
 
   async create(createVariableDto: CreateVariableDto) {
-    const newVariable = await this.variableRepository.create(createVariableDto);
+    const newVariable = this.variableRepository.create(createVariableDto);
     return await this.variableRepository.save(newVariable);
   }
 

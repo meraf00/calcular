@@ -10,5 +10,9 @@ export class CreateVariableDto {
   @ApiProperty({ description: 'The value of the variable' })
   @IsString()
   @IsOptional()
-  description: string;
+  description?: string;
+
+  @ApiProperty({ description: 'The expression ID of the variable' })
+  @IsUUID()
+  expressionId: string;
 }

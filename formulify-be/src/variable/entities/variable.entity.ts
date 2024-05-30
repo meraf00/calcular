@@ -1,5 +1,11 @@
 import { Expression } from 'src/expression/entities/expression.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 
 @Entity()
 export class Variable {
@@ -13,5 +19,9 @@ export class Variable {
   description: string;
 
   @ManyToOne(() => Expression, (expression) => expression.variables)
+  @JoinColumn({ name: 'expressionId' })
   expression: Expression;
+
+  @Column()
+  expressionId: string;
 }
