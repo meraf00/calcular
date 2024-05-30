@@ -12,6 +12,6 @@ export class Expression {
   @Column()
   formula: string;
 
-  @OneToMany(() => Variable, (variable) => variable.expression)
-  variables: Variable[];
+  @OneToMany(() => Expression, (expression) => expression.formula)
+  dependencies: Expression[];
 }
