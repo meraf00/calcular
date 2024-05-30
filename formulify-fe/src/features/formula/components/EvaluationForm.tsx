@@ -3,31 +3,47 @@
 import { notifications } from '@mantine/notifications';
 import { TextInput } from '@mantine/core';
 
-import { Expression, Parser } from '@/lib/models/expression';
+import { Expression as ParserExpression, Parser } from '@/shared/parser';
+import { Expression } from '@/lib/models/expression';
 import { cacheKeys } from '@/api/api';
-import { getExpression } from '@/api/expression.api';
+import { getExpressions } from '@/api/expression.api';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 export interface EvaluationFormProps {
   expression: Expression;
 }
 
 export default function EvaluationForm({ expression }: EvaluationFormProps) {
-  const [vars, setVars] = useState<number[]>(
-    Array(expression.variables.length).fill(0)
-  );
+  const { data: expressions } = useQuery<Expression[]>({
+    queryKey: [cacheKeys.expressions],
+    queryFn: getExpressions,
+  });
 
-  const parser = new Parser(expression.formula);
+  const map: Record<string, Expression> = {};
+
+  expressions?.forEach((e) => {
+    map[e.name] = e;
+  });
+
+  let parser: Parser | null = null;
+  if (expressions) parser = new Parser(expression, map);
+
+  const deps = parser
+    ?.getDependencies(expression)
+    .map((dep) => expressions?.find((e) => e.name === dep)!);
+
+  const [vars, setVars] = useState<number[]>(Array(deps?.length).fill(0));
 
   const evaluate = () => {
     const kv: { [key: string]: number } = {};
-    expression?.variables.forEach((v: string, i) => {
-      kv[v] = vars[i];
+
+    deps?.forEach((e: Expression, i) => {
+      kv[e.name] = vars[i];
     });
 
     try {
-      const result = parser.evaluate(kv);
+      const result = parser?.evaluate(kv);
 
       return result;
     } catch (e: any) {
@@ -35,7 +51,7 @@ export default function EvaluationForm({ expression }: EvaluationFormProps) {
     }
   };
 
-  const inputs = expression.variables.map((variable, i) => {
+  const inputs = deps?.map((exp, i) => {
     return (
       <TextInput
         value={vars[i] ?? 0}
@@ -46,9 +62,9 @@ export default function EvaluationForm({ expression }: EvaluationFormProps) {
             ...vars.slice(i + 1),
           ])
         }
-        key={variable}
-        label={variable}
-        placeholder={variable}
+        key={exp.id}
+        label={exp.name}
+        placeholder={exp.name}
         type="number"
         required
       />

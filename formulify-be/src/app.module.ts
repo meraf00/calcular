@@ -12,9 +12,9 @@ import { EvaluationModule } from './evaluation/evaluation.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
-      port: 5433,
+      port: 5432,
       username: 'postgres',
-      password: 'dawit',
+      password: 'root',
       database: 'formulify',
       entities: [Variable, Expression],
       synchronize: true,

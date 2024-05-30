@@ -1,9 +1,11 @@
 'use client';
 
 import CreateExpressionWrapper from '@/features/formula/components/CreateExpressionWrapper';
+import EvaluationForm from '@/features/formula/components/EvaluationForm';
 import ExpressionList from '@/features/formula/components/ExpressionList';
+
 import { Tabs, rem } from '@mantine/core';
-import { IconMath, IconPlus } from '@tabler/icons-react';
+import { IconCalculator, IconMath } from '@tabler/icons-react';
 
 export default function Home() {
   const iconStyle = { width: rem(12), height: rem(12) };
@@ -18,16 +20,20 @@ export default function Home() {
           >
             Formulas
           </Tabs.Tab>
-          <Tabs.Tab value="create" leftSection={<IconPlus style={iconStyle} />}>
-            Add Formula
+          <Tabs.Tab
+            value="evaluate"
+            leftSection={<IconCalculator style={iconStyle} />}
+          >
+            Evaluate
           </Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="create" className="w-full">
+        <Tabs.Panel value="formulas" className="flex gap-10 w-full">
           <CreateExpressionWrapper />
+          <ExpressionList />
         </Tabs.Panel>
 
-        <Tabs.Panel value="formulas">
+        <Tabs.Panel value="evaluate" className="flex gap-10 w-full">
           <ExpressionList />
         </Tabs.Panel>
       </Tabs>

@@ -27,7 +27,7 @@ export default function CreateExpressionWrapper() {
   };
 
   return (
-    <div className="flex w-1/3 p-5">
+    <div className="flex w-full p-5">
       <ExpressionForm onSubmit={handleCreate} />
     </div>
   );

@@ -1,147 +1,118 @@
 'use client';
 
 import { notifications } from '@mantine/notifications';
-import { Button, MultiSelect, TextInput } from '@mantine/core';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { ChangeEvent, useEffect, useMemo } from 'react';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { Expression, Parser } from '@/lib/models/expression';
+import { Button, TextInput } from '@mantine/core';
+import { useState } from 'react';
+import { Expression } from '@/lib/models/expression';
+import { Expression as ParserExpression } from '@shared/parser';
+import { ExpressionBuilder } from './ExpressionBuilder';
+import { useQuery } from '@tanstack/react-query';
+import { cacheKeys } from '@/api/api';
+import { getExpressions } from '@/api/expression.api';
+import { Parser } from '@/shared/parser';
 
 export interface ExpressionFormProps {
   expression?: Expression;
-  onSubmit: SubmitHandler<ExpressionFormData>;
+  onSubmit: (data: ExpressionFormData) => void;
 }
 
 export type ExpressionFormData = {
   name: string;
   formula: string;
-  variables: string[];
+  dependencies: string[];
 };
-
-const expressionFormData = yup
-  .object({
-    name: yup.string().required(),
-    formula: yup.string().required(),
-    variables: yup.array().of(yup.string().required()).required(),
-  })
-  .required();
-
-const expressionToForm = (
-  expression: Expression | undefined
-): ExpressionFormData => ({
-  name: expression?.name ?? '',
-  formula: expression?.formula ?? '',
-  variables: expression?.variables ?? [],
-});
 
 export default function ExpressionForm({
   expression,
   onSubmit,
 }: ExpressionFormProps) {
-  const {
-    control,
-    reset,
-    getValues,
-    setValue,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ExpressionFormData>({
-    resolver: yupResolver(expressionFormData),
-    defaultValues: useMemo(() => expressionToForm(expression), [expression]),
+  const { data: expressions } = useQuery<Expression[]>({
+    queryKey: [cacheKeys.expressions],
+    queryFn: getExpressions,
   });
 
-  useEffect(() => {
-    reset(expressionToForm(expression));
-  }, [expression, reset]);
+  const [name, setName] = useState<string>('');
+  const [formula, setFormula] = useState<string[]>([]);
 
-  const validateVariableName = (name: string) => {
-    return name.match(/^[a-zA-Z_]+[a-zA-Z0-9]*$/i);
-  };
+  const validateAndSubmit = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  const handleVariableInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const name = e.currentTarget.value;
-    const length = name.length;
-
-    if (length === 0) return;
-
-    if (!validateVariableName(name)) {
-      if (
-        name[name.length - 1] === ' ' &&
-        validateVariableName(name.slice(0, length - 1))
-      ) {
-        setValue('variables', [
-          ...getValues().variables.filter(
-            (v) => v !== name.slice(0, length - 1)
-          ),
-          name.slice(0, length - 1),
-        ]);
-        e.currentTarget.value = '';
-      }
+    if (formula.length === 0) {
+      return onSubmit({
+        name: name,
+        formula: name,
+        dependencies: [],
+      });
     }
-  };
 
-  const validateAndSubmit = (formData: ExpressionFormData) => {
-    const parser = new Parser(formData.formula);
+    try {
+      const formula_ = formula
+        .map((f) => {
+          if (['(', ')', '*', '-', '+'].includes(f) || Number(f)) {
+            return f;
+          }
+          const name = expressions?.find((e) => e.id === f)?.name;
+          if (name) return name;
+          throw new Error(`${f} is not found`);
+        })
+        .join(' ');
 
-    const errorMessage = parser.validate([...formData.variables]);
+      const map: Record<string, Expression> = {};
 
-    if (errorMessage != null) {
-      return notifications.show({
-        title: 'Invalid formula',
-        message: errorMessage,
+      expressions?.forEach((e) => {
+        map[e.name] = e;
+      });
+
+      const newFormula = new ParserExpression(name, formula_);
+      const parser = new Parser(newFormula, map);
+
+      const error = parser.validate();
+
+      if (error === null) {
+        const deps = parser.getDependencies(newFormula).map((dep) => {
+          const id = expressions?.find((e) => e.name === dep)?.id;
+          if (id) return id;
+          throw new Error(`Expression ${dep} is not found`);
+        });
+
+        onSubmit({
+          name: name,
+          formula: formula_,
+          dependencies: deps,
+        });
+      } else {
+        throw new Error(error);
+      }
+    } catch (e: any) {
+      notifications.show({
+        title: 'Error',
+        message: e.message,
         color: 'red',
       });
     }
-    onSubmit(getValues());
   };
 
   return (
-    <form onSubmit={handleSubmit(validateAndSubmit)} className="w-full">
-      <Controller
-        name="name"
-        control={control}
-        render={({ field }) => (
-          <TextInput label="Name" placeholder="Name" {...field} required />
-        )}
-      />
-
+    <form onSubmit={validateAndSubmit} className="w-full flex flex-col gap-3">
       <TextInput
-        label="Variables"
-        placeholder="Variable"
-        onChange={handleVariableInputChange}
+        label="Name"
+        placeholder="Name"
+        value={name}
+        onChange={(e) => setName(e.currentTarget.value)}
+        required
       />
 
-      <Controller
-        name="variables"
-        control={control}
-        render={({ field }) => (
-          <MultiSelect
-            variant="unstyled"
-            style={{
-              color: 'transparent',
-            }}
-            {...field}
-            clearable
-          />
-        )}
-      ></Controller>
-
-      <Controller
-        name="formula"
-        control={control}
-        render={({ field }) => (
-          <TextInput
-            label="Formula"
-            placeholder="Formula"
-            {...field}
-            required
-          />
-        )}
-      />
+      {expressions && (
+        <ExpressionBuilder
+          expressions={expressions}
+          value={formula}
+          setValue={setFormula}
+        />
+      )}
 
       <Button type="submit" mt="sm">
-        Save
+        Add formula
       </Button>
     </form>
   );

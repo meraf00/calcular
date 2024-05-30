@@ -23,17 +23,17 @@ export default function ExpressionList() {
         </Link>
       </Table.Td>
       <Table.Td>{exp.formula}</Table.Td>
-      <Table.Td>{exp.variables.join(', ')}</Table.Td>
-      <Table.Td>
+      <Table.Td>{exp.dependencies.map((d) => d.name).join(', ')}</Table.Td>
+      {/* <Table.Td>
         <Link href="">
           <IconEdit />
         </Link>
-      </Table.Td>
+      </Table.Td> */}
     </Table.Tr>
   ));
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <LoadingOverlay visible={isLoading} />
       <Table highlightOnHover striped>
         <Table.Thead>
@@ -41,7 +41,7 @@ export default function ExpressionList() {
             <Table.Th>Name</Table.Th>
             <Table.Th>Formula</Table.Th>
             <Table.Th>Variables</Table.Th>
-            <Table.Th></Table.Th>
+            {/* <Table.Th></Table.Th> */}
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>
