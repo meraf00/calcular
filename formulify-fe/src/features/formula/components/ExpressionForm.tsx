@@ -7,6 +7,11 @@ import { ChangeEvent, useEffect, useMemo } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Expression, Parser } from '@/lib/models/expression';
+import { MultiSelectInput } from '@/components/MultiSelectInput';
+import { ExpressionBuilder } from './ExpressionBuilder';
+import { useQuery } from '@tanstack/react-query';
+import { cacheKeys } from '@/api/api';
+import { getExpressions } from '@/api/expression.api';
 
 export interface ExpressionFormProps {
   expression?: Expression;
@@ -16,14 +21,14 @@ export interface ExpressionFormProps {
 export type ExpressionFormData = {
   name: string;
   formula: string;
-  variables: string[];
+  dependencies: string[];
 };
 
 const expressionFormData = yup
   .object({
     name: yup.string().required(),
     formula: yup.string().required(),
-    variables: yup.array().of(yup.string().required()).required(),
+    dependencies: yup.array().of(yup.string().required()).required(),
   })
   .required();
 
@@ -32,7 +37,7 @@ const expressionToForm = (
 ): ExpressionFormData => ({
   name: expression?.name ?? '',
   formula: expression?.formula ?? '',
-  variables: expression?.variables ?? [],
+  dependencies: expression?.dependencies.map((dep) => dep.name) ?? [],
 });
 
 export default function ExpressionForm({
@@ -51,53 +56,19 @@ export default function ExpressionForm({
     defaultValues: useMemo(() => expressionToForm(expression), [expression]),
   });
 
+  const { data: expressions } = useQuery({
+    queryKey: [cacheKeys.expressions],
+    queryFn: getExpressions,
+  });
+
   useEffect(() => {
     reset(expressionToForm(expression));
   }, [expression, reset]);
 
-  const validateVariableName = (name: string) => {
-    return name.match(/^[a-zA-Z_]+[a-zA-Z0-9]*$/i);
-  };
-
-  const handleVariableInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const name = e.currentTarget.value;
-    const length = name.length;
-
-    if (length === 0) return;
-
-    if (!validateVariableName(name)) {
-      if (
-        name[name.length - 1] === ' ' &&
-        validateVariableName(name.slice(0, length - 1))
-      ) {
-        setValue('variables', [
-          ...getValues().variables.filter(
-            (v) => v !== name.slice(0, length - 1)
-          ),
-          name.slice(0, length - 1),
-        ]);
-        e.currentTarget.value = '';
-      }
-    }
-  };
-
-  const validateAndSubmit = (formData: ExpressionFormData) => {
-    const parser = new Parser(formData.formula);
-
-    const errorMessage = parser.validate([...formData.variables]);
-
-    if (errorMessage != null) {
-      return notifications.show({
-        title: 'Invalid formula',
-        message: errorMessage,
-        color: 'red',
-      });
-    }
-    onSubmit(getValues());
-  };
-
   return (
-    <form onSubmit={handleSubmit(validateAndSubmit)} className="w-full">
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+      {expressions && <ExpressionBuilder expressions={expressions} />}
+
       <Controller
         name="name"
         control={control}
@@ -106,14 +77,8 @@ export default function ExpressionForm({
         )}
       />
 
-      <TextInput
-        label="Variables"
-        placeholder="Variable"
-        onChange={handleVariableInputChange}
-      />
-
       <Controller
-        name="variables"
+        name="dependencies"
         control={control}
         render={({ field }) => (
           <MultiSelect
@@ -141,7 +106,7 @@ export default function ExpressionForm({
       />
 
       <Button type="submit" mt="sm">
-        Save
+        Add formula
       </Button>
     </form>
   );

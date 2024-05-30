@@ -4,14 +4,14 @@ import api from './api';
 export interface CreateExpressionDto {
   name: string;
   formula: string;
-  variables: string[];
+  dependencies: string[];
 }
 
 export const getExpression = async (id: string): Promise<Expression> => {
   const response = await api.get(`expression/${id}`);
   return {
     ...response.data,
-    variables: response.data.variables.map((v: any) => v.name),
+    dependencies: response.data.dependencies.map((v: any) => v.name),
   };
 };
 
@@ -20,7 +20,7 @@ export const getExpressions = async () => {
   return response.data.map((exp: any) => {
     return {
       ...exp,
-      variables: exp.variables.map((v: any) => v.name),
+      dependencies: exp.variables,
     };
   });
 };
