@@ -23,7 +23,7 @@ export default function ExpressionList() {
         </Link>
       </Table.Td>
       <Table.Td>{exp.formula}</Table.Td>
-      <Table.Td>{exp.variables.join(', ')}</Table.Td>
+      <Table.Td>{exp.dependencies.map((d) => d.name).join(', ')}</Table.Td>
       {/* <Table.Td>
         <Link href="">
           <IconEdit />

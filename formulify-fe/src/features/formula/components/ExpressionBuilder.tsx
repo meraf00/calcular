@@ -1,8 +1,11 @@
 import { MultiSelectInput } from '@/components/MultiSelectInput';
-import { Expression, validateName } from '@/lib/models/expression';
+import { Expression } from '@/lib/models/expression';
+import { Dispatch, SetStateAction } from 'react';
 
 export interface ExpressionBuilderProps {
   expressions: Expression[];
+  value: string[];
+  setValue: Dispatch<SetStateAction<string[]>>;
 }
 
 const operators = [
@@ -18,25 +21,45 @@ const operators = [
     value: '*',
     label: '*',
   },
+  {
+    value: '(',
+    label: '(',
+  },
+  {
+    value: ')',
+    label: ')',
+  },
 ];
 
-export const ExpressionBuilder = ({ expressions }: ExpressionBuilderProps) => {
+export const ExpressionBuilder = ({
+  expressions,
+  value,
+  setValue,
+}: ExpressionBuilderProps) => {
   const options = [
     ...operators,
     ...expressions.map((e) => ({ value: e.id, label: e.name })),
   ];
 
   const dataBuilder = (value: string) => {
-    if (Number(value)) {
+    if (Number(value) && !'+-'.includes(value[0])) {
       return [{ value: value, label: value }];
     }
-
-    // if (validateName(value)) {
-    //   return [{ value: value, label: value }];
-    // }
 
     return options;
   };
 
-  return <MultiSelectInput onChange={console.log} dataBuilder={dataBuilder} />;
+  return (
+    <div>
+      <span className="text-sm">
+        Formula <span className="text-red-500">*</span>
+      </span>
+      <MultiSelectInput
+        value={value}
+        setValue={setValue}
+        dataBuilder={dataBuilder}
+        placeholder="Formula"
+      />
+    </div>
+  );
 };

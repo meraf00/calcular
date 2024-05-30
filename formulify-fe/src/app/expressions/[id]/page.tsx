@@ -19,6 +19,8 @@ export default function ExpressionPage() {
     queryFn: () => getExpression(expressionId ?? ''),
   });
 
+  console.log(expression);
+
   return (
     <div className="p-5 w-full">
       {expression && <EvaluationForm expression={expression} />}

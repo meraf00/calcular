@@ -9,9 +9,10 @@ export interface CreateExpressionDto {
 
 export const getExpression = async (id: string): Promise<Expression> => {
   const response = await api.get(`expression/${id}`);
+  console.log(response.data);
   return {
     ...response.data,
-    dependencies: response.data.dependencies.map((v: any) => v.name),
+    dependencies: response.data.variables.map((v: any) => v.name),
   };
 };
 

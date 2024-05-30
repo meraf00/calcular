@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import {
   PillsInput,
   Pill,
@@ -14,12 +14,19 @@ export interface MultiSelectProps {
     label: string;
   }[];
 
+  value: string[];
+  setValue: Dispatch<SetStateAction<string[]>>;
+
+  placeholder?: string;
+
   onChange?: (values: string[]) => void;
 }
 
 export const MultiSelectInput = ({
+  placeholder,
   dataBuilder,
-  onChange,
+  value,
+  setValue,
 }: MultiSelectProps) => {
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
@@ -27,30 +34,19 @@ export const MultiSelectInput = ({
   });
 
   const [search, setSearch] = useState('');
-  const [value, setValue] = useState<string[]>([]);
 
   const handleValueSelect = (val: string) =>
-    setValue((current) => {
-      const newValue = [...current, val];
-      onChange && onChange(newValue);
-      return newValue;
-    });
+    setValue((current) => [...current, val]);
 
   const handleValueRemove = (valIndex: number) =>
-    setValue((current) => {
-      const newValue = [
-        ...current.slice(0, valIndex),
-        ...current.slice(valIndex + 1, current.length),
-      ];
-      onChange && onChange(newValue);
-      return newValue;
-    });
+    setValue((current) => [
+      ...current.slice(0, valIndex),
+      ...current.slice(valIndex + 1, current.length),
+    ]);
 
   const getLabel = (value: string) => {
     const item = dataBuilder
-      ? dataBuilder(search).find(
-          (item) => item.label.toLowerCase() === value.toLowerCase()
-        )
+      ? dataBuilder('').find((item) => item.value === value)
       : undefined;
     return item ? item.label : value;
   };
@@ -70,7 +66,7 @@ export const MultiSelectInput = ({
       ? []
       : dataBuilder(search)
           .filter((item) =>
-            item.value.toLowerCase().includes(search.trim().toLowerCase())
+            item.label.toLowerCase().includes(search.trim().toLowerCase())
           )
           .map((item) => (
             <Combobox.Option
@@ -97,7 +93,7 @@ export const MultiSelectInput = ({
                 onFocus={() => combobox.openDropdown()}
                 onBlur={() => combobox.closeDropdown()}
                 value={search}
-                placeholder="Search values"
+                placeholder={placeholder ?? 'Search values'}
                 onChange={(event) => {
                   combobox.updateSelectedOptionIndex();
                   setSearch(event.currentTarget.value);
