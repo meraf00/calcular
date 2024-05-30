@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { EvaluationService } from './evaluation.service';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EvaluationDto } from './dto/evaluation.dto';
@@ -10,9 +10,9 @@ export class EvaluationController {
   @ApiTags('evaluation')
   @ApiOperation({ summary: 'Evaluate an expression' })
   @ApiBody({ type: EvaluationDto })
-  @Get()
+  @Post()
   async evaluate(@Body() evaluationDto: EvaluationDto) {
-    const { expression, variableMap } = evaluationDto;
-    return await this.evaluationService.evaluate(expression, variableMap);
+    const { expressionId, variableMap } = evaluationDto;
+    return await this.evaluationService.evaluate(expressionId, variableMap);
   }
 }
