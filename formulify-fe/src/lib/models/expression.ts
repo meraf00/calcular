@@ -61,7 +61,12 @@ class Lexer {
 
   readIdentifier() {
     const position = this.position;
-    while (this.currentChar.match(/[a-zA-Z]/)) {
+
+    if (this.currentChar.match(/[_a-zA-Z]/)) {
+      this.readChar();
+    }
+
+    while (this.currentChar.match(/[_a-zA-Z0-9]/)) {
       this.readChar();
     }
 
@@ -115,7 +120,7 @@ class Lexer {
       default:
         if (this.currentChar === '') {
           return new Token(TokenType.EOF, this.currentChar);
-        } else if (this.currentChar.match(/[a-zA-Z]/)) {
+        } else if (this.currentChar.match(/[_a-zA-Z]/)) {
           return this.readIdentifier();
         } else if (this.currentChar.match(/[0-9]/)) {
           return this.readNumber();
@@ -221,7 +226,7 @@ export class Parser {
     for (const token of tokens) {
       // if token is a number
       if (token.type === TokenType.IDENT) {
-        if (!context[token.literal]) {
+        if (context[token.literal] === undefined) {
           throw new Error(`Variable ${token.literal} is not found`);
         } else {
           queue.push(new Token(TokenType.NUMBER, `${context[token.literal]}`));
@@ -289,7 +294,7 @@ export const test = () => {
     tokens.push(token);
   }
 
-  const p = new Parser('+');
+  const p = new Parser('_');
   // console.log(p.evaluate({ a: 1, b: 2 }));
   console.log(p.validate([]));
 };

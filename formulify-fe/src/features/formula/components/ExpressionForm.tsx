@@ -1,13 +1,12 @@
 'use client';
 
-import { Button, Chip, MultiSelect, TextInput, rem } from '@mantine/core';
-import { Controller, SubmitHandler, set, useForm } from 'react-hook-form';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
-import { Expression, Parser } from '@/lib/models/expression';
+import { notifications } from '@mantine/notifications';
+import { Button, MultiSelect, TextInput } from '@mantine/core';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { ChangeEvent, useEffect, useMemo } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { IconX } from '@tabler/icons-react';
-import { notifications } from '@mantine/notifications';
+import { Expression, Parser } from '@/lib/models/expression';
 
 export interface ExpressionFormProps {
   expression?: Expression;
@@ -57,7 +56,7 @@ export default function ExpressionForm({
   }, [expression, reset]);
 
   const validateVariableName = (name: string) => {
-    return name.match(/^[a-zA-Z]+[a-zA-Z0-9]*$/i);
+    return name.match(/^[a-zA-Z_]+[a-zA-Z0-9]*$/i);
   };
 
   const handleVariableInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -88,7 +87,7 @@ export default function ExpressionForm({
     const errorMessage = parser.validate([...formData.variables]);
 
     if (errorMessage != null) {
-      notifications.show({
+      return notifications.show({
         title: 'Invalid formula',
         message: errorMessage,
         color: 'red',

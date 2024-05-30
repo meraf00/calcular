@@ -1,26 +1,19 @@
 'use client';
 
-import ExpressionForm from '@/features/formula/components/ExpressionForm';
-import { test } from '@/lib/models/expression';
+import CreateExpressionWrapper from '@/features/formula/components/CreateExpressionWrapper';
+import ExpressionList from '@/features/formula/components/ExpressionList';
 import { Tabs, rem } from '@mantine/core';
-import {
-  IconList,
-  IconMath,
-  IconMessageCircle,
-  IconPhoto,
-  IconPlus,
-  IconSettings,
-} from '@tabler/icons-react';
+import { IconMath, IconPlus } from '@tabler/icons-react';
 
 export default function Home() {
   const iconStyle = { width: rem(12), height: rem(12) };
-  test();
+
   return (
-    <main className="p-5 w-full">
-      <Tabs defaultValue="create">
+    <main className="p-5 w-full relative">
+      <Tabs defaultValue="formulas">
         <Tabs.List>
           <Tabs.Tab
-            value="messages"
+            value="formulas"
             leftSection={<IconMath style={iconStyle} />}
           >
             Formulas
@@ -31,12 +24,12 @@ export default function Home() {
         </Tabs.List>
 
         <Tabs.Panel value="create" className="w-full">
-          <div className="flex w-1/3 p-5">
-            <ExpressionForm onSubmit={console.log} />
-          </div>
+          <CreateExpressionWrapper />
         </Tabs.Panel>
 
-        <Tabs.Panel value="messages">Messages tab content</Tabs.Panel>
+        <Tabs.Panel value="formulas">
+          <ExpressionList />
+        </Tabs.Panel>
       </Tabs>
     </main>
   );
