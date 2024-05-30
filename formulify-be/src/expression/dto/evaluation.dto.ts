@@ -5,5 +5,5 @@ export class EvaluationDto {
   expressionId: string;
 
   @ApiProperty({ description: 'The variable map for the expression' })
-  variableMap: Record<string, number>;
+  variableMap: Record<string, number>; //Record<ExpressionId, VariableName>
 }

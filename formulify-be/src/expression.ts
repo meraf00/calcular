@@ -1,11 +1,17 @@
-export class Expression {
+import { Expression } from './expression/entities/expression.entity';
+
+export class ExpressionP {
   constructor(
     public id: string,
     public name: string,
     public formula: string,
-    public variables: string[],
+    public dependencies: any[],
   ) {}
 }
+
+export const validateName = (name: string) => {
+  return name.match(/^[a-zA-Z_]+[a-zA-Z0-9]*$/i);
+};
 
 enum TokenType {
   EOF = 'EOF',
@@ -139,10 +145,13 @@ class Lexer {
 }
 
 export class Parser {
-  constructor(private formula: string) {}
+  constructor(
+    private expression: ExpressionP,
+    private expressionsMap: Record<string, ExpressionP>,
+  ) {}
 
   private _tokenize(): Token[] {
-    const lexer = new Lexer(this.formula);
+    const lexer = new Lexer(this.expression.formula);
     const tokens = [];
     let token: Token = new Token(TokenType.IDENT, '');
     while (token.type != TokenType.EOF) {
@@ -184,35 +193,61 @@ export class Parser {
     return stack.pop();
   }
 
-  validate(expectedVariables: string[]): string | null {
-    const variables: { [key: string]: number } = {};
+  _enumerateDependencies(exp: ExpressionP): ExpressionP[] {
+    const dependencies: ExpressionP[] = [];
+
+    for (const dep of exp.dependencies) {
+      if (!dependencies.includes(dep)) {
+        dependencies.push(dep);
+      }
+
+      this._enumerateDependencies(dep).forEach((d) => {
+        if (!dependencies.includes(d)) {
+          dependencies.push(d);
+        }
+      });
+    }
+
+    return dependencies;
+  }
+
+  private _evaluateIdentifier(
+    identifier: string,
+    context: Record<string, number>,
+  ) {
+    const evaluated = new Parser(
+      this.expressionsMap[identifier],
+      this.expressionsMap,
+    ).evaluate(context);
+
+    if (!evaluated) throw new Error(`Expression ${identifier} is not found`);
+
+    return evaluated;
+  }
+
+  validate(): string | null {
+    const context: Record<string, number> = {};
+
     try {
-      const tokens: Token[] = this._tokenize();
-
-      for (const token of tokens) {
-        if (token.type === TokenType.IDENT) {
-          variables[token.literal] = 1;
-
-          if (!expectedVariables.includes(token.literal)) {
-            return `Unexpected variable ${token.literal}`;
-          }
+      this._enumerateDependencies(this.expression).forEach((dep) => {
+        if (this.expressionsMap[dep.name] === undefined) {
+          return `Expression ${dep.name} is not found`;
         }
-      }
 
-      for (const variable of expectedVariables) {
-        if (!variables[variable]) {
-          return `Variable ${variable} is not used in the formula`;
+        if (this.expressionsMap[dep.name].dependencies.length === 0) {
+          context[dep.name] = 1;
         }
-      }
+      });
 
-      this.evaluate(variables);
+      this.evaluate(context);
+
       return null;
     } catch (e: any) {
       return e.message;
     }
   }
 
-  evaluate(context: { [key: string]: number }) {
+  evaluate(context: Record<string, number>) {
     const operators = [TokenType.PLUS, TokenType.MINUS, TokenType.ASTERISK];
 
     const tokens = this._tokenize();
@@ -229,10 +264,17 @@ export class Parser {
     for (const token of tokens) {
       // if token is a number
       if (token.type === TokenType.IDENT) {
-        if (context[token.literal] === undefined) {
-          throw new Error(`Variable ${token.literal} is not found`);
-        } else {
+        if (context[token.literal] !== undefined) {
           queue.push(new Token(TokenType.NUMBER, `${context[token.literal]}`));
+        } else if (this.expressionsMap[token.literal] !== undefined) {
+          queue.push(
+            new Token(
+              TokenType.NUMBER,
+              this._evaluateIdentifier(token.literal, context).toString(),
+            ),
+          );
+        } else {
+          throw new Error(`Expression ${token.literal} is not found`);
         }
       } else if (token.type === TokenType.NUMBER) {
         queue.push(token);
@@ -297,7 +339,14 @@ export const test = () => {
     tokens.push(token);
   }
 
-  const p = new Parser('_');
+  const a = new ExpressionP('', 'a', 'a', []);
+  const b = new ExpressionP('', 'b', 'b', []);
+
+  const c = new ExpressionP('', 'c', 'a + b', [a, b]);
+  const d = new ExpressionP('', 'd', '1 + c - a * 2 ', [a, c]);
+
+  const p = new Parser(d, { a, b, c, d });
   // console.log(p.evaluate({ a: 1, b: 2 }));
-  console.log(p.validate([]));
+  // console.log(p.evaluate({ a: 1, b: 2 }));
+  // console.log(p.validate());
 };

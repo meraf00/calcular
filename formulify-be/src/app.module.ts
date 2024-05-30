@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { VariableModule } from './variable/variable.module';
+
 import { ExpressionModule } from './expression/expression.module';
 import { AppDataSource } from './data-source';
 import { Expression } from './expression/entities/expression.entity';
-import { Variable } from './variable/entities/variable.entity';
-import { EvaluationModule } from './evaluation/evaluation.module';
 
 @Module({
   imports: [
@@ -16,12 +14,11 @@ import { EvaluationModule } from './evaluation/evaluation.module';
       username: 'postgres',
       password: 'dawit',
       database: 'formulify',
-      entities: [Variable, Expression],
+      entities: [Expression],
       synchronize: true,
     }),
-    VariableModule,
+
     ExpressionModule,
-    EvaluationModule,
   ],
 })
 export class AppModule {}

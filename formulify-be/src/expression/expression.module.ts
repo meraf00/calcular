@@ -4,10 +4,9 @@ import { ExpressionController } from './expression.controller';
 import { Type } from 'class-transformer';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Expression } from './entities/expression.entity';
-import { VariableModule } from 'src/variable/variable.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Expression]), VariableModule],
+  imports: [TypeOrmModule.forFeature([Expression])],
   controllers: [ExpressionController],
   providers: [ExpressionService],
   exports: [ExpressionService],

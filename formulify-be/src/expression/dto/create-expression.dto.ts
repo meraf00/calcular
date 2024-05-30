@@ -1,16 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsString } from 'class-validator';
+
+import { IsString, IsOptional, IsArray, IsObject } from 'class-validator';
 
 export class CreateExpressionDto {
-  @ApiProperty({ description: 'The name of the expression' })
   @IsString()
+  @ApiProperty({ description: 'The name of the expression' })
   name: string;
 
-  @ApiProperty({ description: 'The formula of the expression' })
   @IsString()
+  @ApiProperty({ description: 'The formula of the expression' })
   formula: string;
 
-  @ApiProperty({ description: 'The variables of the expression' })
+  @IsOptional()
   @IsArray()
-  variables: string[];
+  @IsObject({ each: true })
+  @ApiProperty({
+    description:
+      'The dependencies of the expression. Record<nameInFormula, expressionId>. It should be an array of objects with the key as the name in the formula and the value  as the id of the expression.',
+  })
+  dependencies?: Record<string, string>[];
+
+  // Record<nameInFormula, expressionId>
 }

@@ -1,5 +1,4 @@
-import { Variable } from 'src/variable/entities/variable.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class Expression {
@@ -12,6 +11,6 @@ export class Expression {
   @Column()
   formula: string;
 
-  @OneToMany(() => Variable, (variable) => variable.expression)
-  variables: Variable[];
+  @Column('jsonb', { nullable: true })
+  dependencies: Record<string, string>[];
 }
