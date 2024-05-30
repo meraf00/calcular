@@ -1,4 +1,3 @@
-import { Variable } from 'src/variable/entities/variable.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
 @Entity()
