@@ -3,7 +3,37 @@ import { Lexer, Token, TokenType } from './parser';
 
 @Injectable()
 export class EvaluatorService {
-  tokenizer(expression: string): Token[] {
+  evaluate(
+    expression: string,
+    variableValues: Record<string, number>,
+    formulaSet: Record<string, string>,
+  ): number {
+    const tokens = this.tokenizer(expression);
+
+    const postfix = this.shuntingYardParser(
+      tokens,
+      variableValues,
+      formulaSet,
+      this.independentVariables(this.dependencyGraph(formulaSet)),
+    );
+    return this.postfixEvaluator(postfix);
+  }
+
+  validate(formulaSet: Record<string, string>) {
+    const graph = this.dependencyGraph(formulaSet);
+
+    for (const key in graph) {
+      if (formulaSet[key] === undefined) {
+        throw new Error(`Unknown name "${key}" found in formula.`);
+      }
+    }
+
+    if (this.hasCycle(graph)) {
+      throw new Error('Cyclic dependency detected');
+    }
+  }
+
+  private tokenizer(expression: string): Token[] {
     const lexer = new Lexer(expression);
     const tokens: Token[] = [];
     let token: Token = new Token(TokenType.IDENT, '');
@@ -15,7 +45,7 @@ export class EvaluatorService {
     return tokens;
   }
 
-  postfixEvaluator(tokens: Token[]) {
+  private postfixEvaluator(tokens: Token[]) {
     const stack: number[] = [];
 
     for (const token of tokens) {
@@ -46,7 +76,7 @@ export class EvaluatorService {
     return stack.pop();
   }
 
-  shuntingYardParser(
+  private shuntingYardParser(
     tokens: Token[],
     variableValues: Record<string, number>,
     formulaSet: Record<string, string>,
@@ -142,23 +172,7 @@ export class EvaluatorService {
     return queue;
   }
 
-  evaluate(
-    expression: string,
-    variableValues: Record<string, number>,
-    formulaSet: Record<string, string>,
-  ): number {
-    const tokens = this.tokenizer(expression);
-
-    const postfix = this.shuntingYardParser(
-      tokens,
-      variableValues,
-      formulaSet,
-      this.independentVariables(this.dependencyGraph(formulaSet)),
-    );
-    return this.postfixEvaluator(postfix);
-  }
-
-  dependencyGraph(formulaSet: Record<string, string>) {
+  private dependencyGraph(formulaSet: Record<string, string>) {
     const graph = {};
 
     for (const key in formulaSet) {
@@ -182,7 +196,7 @@ export class EvaluatorService {
     return graph;
   }
 
-  independentVariables(graph: Record<string, Set<string>>) {
+  private independentVariables(graph: Record<string, Set<string>>) {
     const inDegrees = {};
 
     for (const key in graph) {
@@ -206,7 +220,7 @@ export class EvaluatorService {
     return queue;
   }
 
-  hasCycle(graph: Record<string, Set<string>>) {
+  private hasCycle(graph: Record<string, Set<string>>) {
     const inDegrees = {};
 
     for (const key in graph) {
@@ -244,19 +258,5 @@ export class EvaluatorService {
     }
 
     return order.length !== Object.keys(graph).length;
-  }
-
-  validate(formulaSet: Record<string, string>) {
-    const graph = this.dependencyGraph(formulaSet);
-
-    for (const key in graph) {
-      if (formulaSet[key] === undefined) {
-        throw new Error(`Unknown name "${key}" found in formula.`);
-      }
-    }
-
-    if (this.hasCycle(graph)) {
-      throw new Error('Cyclic dependency detected');
-    }
   }
 }
