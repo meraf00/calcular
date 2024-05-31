@@ -5,5 +5,5 @@ export default axios.create({
 });
 
 export const cacheKeys = {
-  expressions: 'expressions',
+  formulas: 'formulas',
 };

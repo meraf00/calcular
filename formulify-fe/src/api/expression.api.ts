@@ -4,30 +4,36 @@ import api from './api';
 export interface CreateExpressionDto {
   name: string;
   formula: string;
-  dependencies: string[];
+  groupId: string;
 }
 
 export const getExpression = async (id: string): Promise<Expression> => {
-  const response = await api.get(`expression/${id}`);
-  console.log(response.data);
+  const response = await api.get(`formulas/${id}`);
+
   return {
     ...response.data,
-    dependencies: response.data.variables.map((v: any) => v.name),
+    formula: response.data.representation,
+    dependencies: [],
   };
 };
 
 export const getExpressions = async () => {
-  const response = await api.get('expression');
+  const response = await api.get('formulas');
   return response.data.map((exp: any) => {
     return {
       ...exp,
+      formula: exp.representation,
       dependencies: exp.variables,
     };
   });
 };
 
 export const createExpression = async (dto: CreateExpressionDto) => {
-  const response = await api.post('expression', dto);
+  const response = await api.post('formulas', {
+    name: dto.name,
+    representation: dto.formula,
+    groupId: dto.groupId,
+  });
   return response.data;
 };
 
@@ -36,6 +42,6 @@ export const updateExpression = async (
   name: string,
   formula: string
 ) => {
-  const response = await api.patch(`expression/${id}`, { name, formula });
+  const response = await api.patch(`formulas/${id}`, { name, formula });
   return response.data;
 };

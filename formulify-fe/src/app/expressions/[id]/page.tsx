@@ -15,7 +15,7 @@ export default function ExpressionPage() {
   const expressionId = params.id as string;
 
   const { data: expression, isLoading } = useQuery<Expression>({
-    queryKey: [cacheKeys.expressions, expressionId],
+    queryKey: [cacheKeys.formulas, expressionId],
     queryFn: () => getExpression(expressionId ?? ''),
   });
 
