@@ -126,6 +126,7 @@ export class FormulaService {
     groupId: string,
   ): Promise<Record<string, string>> {
     /**
+     * Schema for formula set <name: mathematical expression>
     {
       'formula1': '2 + 2',
       'formula2': 'formula1 * 2',

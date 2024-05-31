@@ -50,6 +50,7 @@ export class EvaluatorService {
     tokens: Token[],
     variableValues: Record<string, number>,
     formulaSet: Record<string, string>,
+    independentVariables: string[],
   ) {
     const operators = [TokenType.PLUS, TokenType.MINUS, TokenType.ASTERISK];
 
@@ -65,21 +66,25 @@ export class EvaluatorService {
     for (const token of tokens) {
       // if token is a number literal or it's value can be found in variableValues
       if (token.type === TokenType.IDENT) {
-        // if value is found in variableValues, resolve it to the passed number
-        if (variableValues[token.literal] !== undefined) {
-          queue.push(
-            new Token(TokenType.NUMBER, `${variableValues[token.literal]}`),
-          );
-        }
-
         // if value is found in formulaSet, evaluate the formula and push the result
-        else if (formulaSet[token.literal] !== undefined) {
-          const value = this.evaluate(
-            token.literal,
-            variableValues,
-            formulaSet,
-          );
-          queue.push(new Token(TokenType.NUMBER, value.toString()));
+        if (formulaSet[token.literal] !== undefined) {
+          // if variable is independent variable and
+          // if value is found in variableValues, resolve it to the passed number
+          if (
+            independentVariables.includes(token.literal) &&
+            variableValues[token.literal] !== undefined
+          ) {
+            queue.push(
+              new Token(TokenType.NUMBER, `${variableValues[token.literal]}`),
+            );
+          } else {
+            const value = this.evaluate(
+              formulaSet[token.literal],
+              variableValues,
+              formulaSet,
+            );
+            queue.push(new Token(TokenType.NUMBER, value.toString()));
+          }
         }
 
         // the identifier is neither number nor formula in the formulaSet, thus we can't resolve it
@@ -143,7 +148,13 @@ export class EvaluatorService {
     formulaSet: Record<string, string>,
   ): number {
     const tokens = this.tokenizer(expression);
-    const postfix = this.shuntingYardParser(tokens, variableValues, formulaSet);
+
+    const postfix = this.shuntingYardParser(
+      tokens,
+      variableValues,
+      formulaSet,
+      this.independentVariables(this.dependencyGraph(formulaSet)),
+    );
     return this.postfixEvaluator(postfix);
   }
 
@@ -169,6 +180,30 @@ export class EvaluatorService {
     }
 
     return graph;
+  }
+
+  independentVariables(graph: Record<string, Set<string>>) {
+    const inDegrees = {};
+
+    for (const key in graph) {
+      inDegrees[key] = 0;
+    }
+
+    for (const key in graph) {
+      for (const nbr of Array.from(graph[key])) {
+        inDegrees[nbr] += 1;
+      }
+    }
+
+    const queue: string[] = [];
+
+    for (const key in inDegrees) {
+      if (inDegrees[key] === 0) {
+        queue.push(key);
+      }
+    }
+
+    return queue;
   }
 
   hasCycle(graph: Record<string, Set<string>>) {
@@ -207,10 +242,6 @@ export class EvaluatorService {
         }
       }
     }
-
-    console.log(order);
-    console.log(graph);
-    console.log(inDegrees);
 
     return order.length !== Object.keys(graph).length;
   }
