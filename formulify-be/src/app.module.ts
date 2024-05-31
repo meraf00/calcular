@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { VariableModule } from './variable/variable.module';
-import { ExpressionModule } from './expression/expression.module';
-import { EvaluationModule } from './evaluation/evaluation.module';
 import { ConfigModule } from '@nestjs/config';
-import { EvaluatorModule } from './evaluator/evaluator.module';
+import { FormulaModule } from './formula/formula.module';
 
 @Module({
   imports: [
@@ -18,11 +15,9 @@ import { EvaluatorModule } from './evaluator/evaluator.module';
       database: process.env.DATABASE_NAME,
       entities: [__dirname + '/**/*.entity{.ts}'],
       synchronize: true,
+      autoLoadEntities: true,
     }),
-    VariableModule,
-    ExpressionModule,
-    EvaluationModule,
-    EvaluatorModule,
+    FormulaModule,
   ],
 })
 export class AppModule {}

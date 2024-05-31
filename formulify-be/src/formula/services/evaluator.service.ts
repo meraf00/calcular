@@ -84,7 +84,7 @@ export class EvaluatorService {
 
         // the identifier is neither number nor formula in the formulaSet, thus we can't resolve it
         else {
-          throw new Error(`Expression ${token.literal} is not found`);
+          throw new Error(`Unknown name "${token.literal}" found in formula.`);
         }
       } else if (token.type === TokenType.NUMBER) {
         queue.push(token);
@@ -151,12 +151,16 @@ export class EvaluatorService {
     const graph = {};
 
     for (const key in formulaSet) {
+      graph[key] = new Set();
+    }
+
+    for (const key in formulaSet) {
       const tokens = this.tokenizer(formulaSet[key]);
 
       for (const token of tokens) {
         if (token.type === TokenType.IDENT) {
           if (graph[token.literal] === undefined) {
-            graph[token.literal] = new Set(key);
+            graph[token.literal] = new Set([key]);
           } else {
             graph[token.literal].add(key);
           }
@@ -171,10 +175,12 @@ export class EvaluatorService {
     const inDegrees = {};
 
     for (const key in graph) {
-      if (inDegrees[key] === undefined) {
-        inDegrees[key] = 1;
-      } else {
-        inDegrees[key] += 1;
+      inDegrees[key] = 0;
+    }
+
+    for (const key in graph) {
+      for (const nbr of Array.from(graph[key])) {
+        inDegrees[nbr] += 1;
       }
     }
 
@@ -191,14 +197,20 @@ export class EvaluatorService {
     while (queue.length > 0) {
       const node = queue.shift()!;
 
+      order.push(node);
+
       for (const neighbor of graph[node]) {
         inDegrees[neighbor] -= 1;
 
         if (inDegrees[neighbor] === 0) {
-          order.push(neighbor);
+          queue.push(neighbor);
         }
       }
     }
+
+    console.log(order);
+    console.log(graph);
+    console.log(inDegrees);
 
     return order.length !== Object.keys(graph).length;
   }
@@ -208,7 +220,7 @@ export class EvaluatorService {
 
     for (const key in graph) {
       if (formulaSet[key] === undefined) {
-        throw new Error(`Expression ${key} is not found`);
+        throw new Error(`Unknown name "${key}" found in formula.`);
       }
     }
 

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Formula } from 'src/entities/formula';
+import { Formula } from 'src/entities/formula.entity';
 import { Repository } from 'typeorm';
 import { CreateFormulaDto, UpdateFormulaDto } from '../dto/requests.dto';
 import { EvaluatorService } from './evaluator.service';
@@ -33,8 +33,13 @@ export class FormulaService {
 
   async create(formula: CreateFormulaDto): Promise<Formula> {
     const availableFormulaSet = await this.getAvailableFormulaSet(
-      formula.formulaGroupId,
+      formula.groupId,
     );
+
+    if (availableFormulaSet[formula.name])
+      throw new BadRequestException(
+        'Duplicate formula name under the same group is not allowed.',
+      );
 
     try {
       // Check if the new formula does not create any circular dependencies

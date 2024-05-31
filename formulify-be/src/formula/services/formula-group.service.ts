@@ -5,7 +5,7 @@ import {
   CreateFormulaGroupDto,
   UpdateFormulaGroupDto,
 } from '../dto/requests.dto';
-import { FormulaGroup } from 'src/entities/formula-group';
+import { FormulaGroup } from 'src/entities/formula-group.entity';
 
 @Injectable()
 export class FormulaGroupService {

@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { Formula } from './formula';
+import { Formula } from './formula.entity';
 
 @Entity({ name: 'formula_groups' })
 export class FormulaGroup {

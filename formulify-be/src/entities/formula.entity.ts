@@ -6,7 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { FormulaGroup } from './formula-group';
+import { FormulaGroup } from './formula-group.entity';
 
 @Entity({ name: 'formulas' })
 @Unique(['groupId', 'name'])
