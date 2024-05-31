@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsObject, IsOptional, IsString, IsUUID } from 'class-validator';
 
 // Formula Group DTOs
 export class CreateFormulaGroupDto {
@@ -74,5 +74,6 @@ export class EvaluateFormulaDto {
   @ApiProperty({
     description: 'Variables to be used in the evaluation of the formula.',
   })
+  @IsObject()
   variables: Record<string, number>;
 }

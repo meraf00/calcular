@@ -1,8 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Formula } from 'src/entities/formula.entity';
 import { Repository } from 'typeorm';
-import { CreateFormulaDto, UpdateFormulaDto } from '../dto/requests.dto';
+import {
+  CreateFormulaDto,
+  EvaluateFormulaDto,
+  UpdateFormulaDto,
+} from '../dto/requests.dto';
 import { EvaluatorService } from './evaluator.service';
 
 @Injectable()
@@ -14,11 +22,8 @@ export class FormulaService {
     private readonly evaluatorService: EvaluatorService,
   ) {}
 
-  async evaluate(
-    id: string,
-    variables: Record<string, number>,
-  ): Promise<number> {
-    const formula = await this.findOneOrFail(id);
+  async evaluate(evaluateFormulaDto: EvaluateFormulaDto): Promise<number> {
+    const formula = await this.findOneOrFail(evaluateFormulaDto.formulaId);
 
     const availableFormulaSet = await this.getAvailableFormulaSet(
       formula.groupId,
@@ -26,7 +31,7 @@ export class FormulaService {
 
     return this.evaluatorService.evaluate(
       formula.representation,
-      variables,
+      evaluateFormulaDto.variables,
       availableFormulaSet,
     );
   }
@@ -92,7 +97,7 @@ export class FormulaService {
       this.evaluatorService.validate(formulaSetAfterDelete);
     } catch (e) {
       throw new BadRequestException(
-        `Formula ${formula.name} is being used by formula ${formula.name}`,
+        `Formula ${formula.name} is being used by other formula in the group.`,
       );
     }
 
@@ -110,7 +115,11 @@ export class FormulaService {
   }
 
   async findOneOrFail(id: string): Promise<Formula> {
-    return this.formulaRepository.findOneByOrFail({ id });
+    try {
+      return await this.formulaRepository.findOneByOrFail({ id });
+    } catch (e) {
+      throw new NotFoundException();
+    }
   }
 
   async getAvailableFormulaSet(

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -23,6 +23,7 @@ export class FormulaGroupService {
     formulaGroup: UpdateFormulaGroupDto,
   ): Promise<FormulaGroup> {
     await this.formulaGroupRepository.update(id, formulaGroup);
+
     return await this.findOneOrFail(id);
   }
 
@@ -36,6 +37,10 @@ export class FormulaGroupService {
   }
 
   async findOneOrFail(id: string): Promise<FormulaGroup> {
-    return this.formulaGroupRepository.findOneByOrFail({ id });
+    try {
+      return await this.formulaGroupRepository.findOneByOrFail({ id });
+    } catch (e) {
+      throw new NotFoundException();
+    }
   }
 }
