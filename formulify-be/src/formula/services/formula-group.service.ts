@@ -33,12 +33,19 @@ export class FormulaGroupService {
   }
 
   async findAll(): Promise<FormulaGroup[]> {
-    return this.formulaGroupRepository.find();
+    return this.formulaGroupRepository.find({
+      relations: {
+        formulas: true,
+      },
+    });
   }
 
   async findOneOrFail(id: string): Promise<FormulaGroup> {
     try {
-      return await this.formulaGroupRepository.findOneByOrFail({ id });
+      return await this.formulaGroupRepository.findOneOrFail({
+        where: { id },
+        relations: { formulas: true },
+      });
     } catch (e) {
       throw new NotFoundException();
     }
