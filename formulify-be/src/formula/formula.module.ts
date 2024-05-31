@@ -12,5 +12,6 @@ import { FormulaGroupService } from './services/formula-group.service';
   imports: [TypeOrmModule.forFeature([Formula, FormulaGroup])],
   providers: [EvaluatorService, FormulaService, FormulaGroupService],
   controllers: [FormulaController, FormulaGroupController],
+  exports: [EvaluatorService],
 })
 export class FormulaModule {}
