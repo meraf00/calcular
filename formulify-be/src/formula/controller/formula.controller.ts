@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import {
   CreateFormulaDto,
   EvaluateFormulaDto,
@@ -21,8 +21,13 @@ export class FormulaController {
   constructor(private readonly formulaService: FormulaService) {}
 
   @Post(':id/evaluated')
-  async evaluate(@Body() evaluateDto: EvaluateFormulaDto) {
-    return this.formulaService.evaluate(evaluateDto);
+  @ApiParam({ name: 'id', description: 'Formula ID' })
+  @ApiBody({ type: EvaluateFormulaDto })
+  async evaluate(
+    @Body() evaluateDto: EvaluateFormulaDto,
+    @Param('id') id: string,
+  ) {
+    return this.formulaService.evaluate(id, evaluateDto);
   }
 
   @Post()

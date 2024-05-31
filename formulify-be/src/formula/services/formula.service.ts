@@ -22,8 +22,11 @@ export class FormulaService {
     private readonly evaluatorService: EvaluatorService,
   ) {}
 
-  async evaluate(evaluateFormulaDto: EvaluateFormulaDto): Promise<number> {
-    const formula = await this.findOneOrFail(evaluateFormulaDto.formulaId);
+  async evaluate(
+    formulaId: string,
+    evaluateFormulaDto: EvaluateFormulaDto,
+  ): Promise<number> {
+    const formula = await this.findOneOrFail(formulaId);
 
     const availableFormulaSet = await this.getAvailableFormulaSet(
       formula.groupId,
