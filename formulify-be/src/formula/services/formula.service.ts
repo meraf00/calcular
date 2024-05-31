@@ -29,11 +29,15 @@ export class FormulaService {
       formula.groupId,
     );
 
-    return this.evaluatorService.evaluate(
-      formula.representation,
-      evaluateFormulaDto.variables,
-      availableFormulaSet,
-    );
+    try {
+      return this.evaluatorService.evaluate(
+        formula.representation,
+        evaluateFormulaDto.variables,
+        availableFormulaSet,
+      );
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 
   async create(formula: CreateFormulaDto): Promise<Formula> {
