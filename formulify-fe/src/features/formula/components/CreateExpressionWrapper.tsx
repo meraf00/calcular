@@ -7,13 +7,17 @@ import { createExpression } from '@/api/expression.api';
 import { cacheKeys } from '@/api/api';
 import { notifications } from '@mantine/notifications';
 
-export default function CreateExpressionWrapper() {
+export default function CreateExpressionWrapper({
+  groupId,
+}: {
+  groupId: string;
+}) {
   const queryClient = useQueryClient();
 
   const createHandler = useMutation({
     mutationFn: createExpression,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [cacheKeys.expressions] });
+      queryClient.invalidateQueries({ queryKey: [cacheKeys.formulas] });
       notifications.show({
         title: 'Success',
         message: 'Formula added successfully',
@@ -23,7 +27,10 @@ export default function CreateExpressionWrapper() {
   });
 
   const handleCreate = (data: ExpressionFormData) => {
-    createHandler.mutate(data);
+    createHandler.mutate({
+      ...data,
+      groupId,
+    });
   };
 
   return (

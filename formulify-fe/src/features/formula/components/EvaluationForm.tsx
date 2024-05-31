@@ -16,7 +16,7 @@ export interface EvaluationFormProps {
 
 export default function EvaluationForm({ expression }: EvaluationFormProps) {
   const { data: expressions } = useQuery<Expression[]>({
-    queryKey: [cacheKeys.expressions],
+    queryKey: [cacheKeys.formulas],
     queryFn: getExpressions,
   });
 

@@ -27,7 +27,7 @@ export default function ExpressionForm({
   onSubmit,
 }: ExpressionFormProps) {
   const { data: expressions } = useQuery<Expression[]>({
-    queryKey: [cacheKeys.expressions],
+    queryKey: [cacheKeys.formulas],
     queryFn: getExpressions,
   });
 

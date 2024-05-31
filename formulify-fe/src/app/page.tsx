@@ -29,7 +29,7 @@ export default function Home() {
         </Tabs.List>
 
         <Tabs.Panel value="formulas" className="flex gap-10 w-full">
-          <CreateExpressionWrapper />
+          <CreateExpressionWrapper groupId="75e29679-e5bf-4be2-8803-ea70591c8548" />
           <ExpressionList />
         </Tabs.Panel>
 

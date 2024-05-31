@@ -1,27 +1,23 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { VariableModule } from './variable/variable.module';
-import { ExpressionModule } from './expression/expression.module';
-import { AppDataSource } from './data-source';
-import { Expression } from './expression/entities/expression.entity';
-import { Variable } from './variable/entities/variable.entity';
-import { EvaluationModule } from './evaluation/evaluation.module';
+import { ConfigModule } from '@nestjs/config';
+import { FormulaModule } from './formula/formula.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'root',
-      database: 'formulify',
-      entities: [Variable, Expression],
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT),
+      username: process.env.DATABASE_USERNAME,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_NAME,
+      entities: [__dirname + '/**/*.entity{.ts}'],
       synchronize: true,
+      autoLoadEntities: true,
     }),
-    VariableModule,
-    ExpressionModule,
-    EvaluationModule,
+    FormulaModule,
   ],
 })
 export class AppModule {}

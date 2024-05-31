@@ -221,7 +221,7 @@ export class Parser {
       const context: Record<string, number> = {};
       for (const dep of deps) {
         if (this.expressionsMap[dep] === undefined) {
-          return `Expression ${dep} is not found`;
+          return `Unknown name "${dep}"`;
         }
 
         if (
@@ -264,7 +264,7 @@ export class Parser {
             )
           );
         } else {
-          throw new Error(`Expression ${token.literal} is not found`);
+          throw new Error(`Unknown name "${token.literal}"`);
         }
       } else if (token.type === TokenType.NUMBER) {
         queue.push(token);
