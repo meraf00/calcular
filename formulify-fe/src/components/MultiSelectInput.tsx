@@ -35,8 +35,10 @@ export const MultiSelectInput = ({
 
   const [search, setSearch] = useState('');
 
-  const handleValueSelect = (val: string) =>
+  const handleValueSelect = (val: string) => {
     setValue((current) => [...current, val]);
+    setSearch('');
+  };
 
   const handleValueRemove = (valIndex: number) =>
     setValue((current) => [

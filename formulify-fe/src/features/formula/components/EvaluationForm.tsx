@@ -1,13 +1,13 @@
 'use client';
 
 import { notifications } from '@mantine/notifications';
-import { TextInput } from '@mantine/core';
+import { Button, TextInput } from '@mantine/core';
 
 import { Expression as ParserExpression, Parser } from '@/shared/parser';
 import { Expression } from '@/lib/models/expression';
 import { cacheKeys } from '@/api/api';
-import { getExpressions } from '@/api/expression.api';
-import { useQuery } from '@tanstack/react-query';
+import { evaluateExpression, getExpressions } from '@/api/expression.api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 export interface EvaluationFormProps {
@@ -18,6 +18,20 @@ export default function EvaluationForm({ expression }: EvaluationFormProps) {
   const { data: expressions } = useQuery<Expression[]>({
     queryKey: [cacheKeys.formulas],
     queryFn: getExpressions,
+  });
+
+  const evaluateHandler = useMutation({
+    mutationFn: evaluateExpression,
+    onSuccess: (data) => {
+      setResult(data.toString());
+    },
+    onError: (error) => {
+      notifications.show({
+        title: 'Evaluation failed',
+        message: error.message,
+        color: 'red',
+      });
+    },
   });
 
   const map: Record<string, Expression> = {};
@@ -34,6 +48,7 @@ export default function EvaluationForm({ expression }: EvaluationFormProps) {
     .map((dep) => expressions?.find((e) => e.name === dep)!);
 
   const [vars, setVars] = useState<number[]>(Array(deps?.length).fill(0));
+  const [result, setResult] = useState<string>('0');
 
   const evaluate = () => {
     const kv: { [key: string]: number } = {};
@@ -42,13 +57,12 @@ export default function EvaluationForm({ expression }: EvaluationFormProps) {
       kv[e.name] = vars[i];
     });
 
-    try {
-      const result = parser?.evaluate(kv);
+    console.log(kv);
 
-      return result;
-    } catch (e: any) {
-      return e.message;
-    }
+    evaluateHandler.mutate({
+      formulaId: expression.id,
+      variables: kv,
+    });
   };
 
   const inputs = deps?.map((exp, i) => {
@@ -77,7 +91,11 @@ export default function EvaluationForm({ expression }: EvaluationFormProps) {
       <div>{inputs}</div>
 
       <div>
-        Result: <span className="text-green">{evaluate()}</span>
+        <Button onClick={evaluate}>Evaluate</Button>
+      </div>
+
+      <div>
+        Result: <span className="text-green">{result}</span>
       </div>
     </div>
   );

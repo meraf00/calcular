@@ -49,6 +49,7 @@ export class UpdateFormulaDto {
   @ApiProperty({
     description:
       'String representation of the formula. Using mathematical operators, variables, or referencing other formulas by name.',
+    example: 'x + y * 4',
   })
   @IsString()
   @IsOptional()
@@ -67,12 +68,9 @@ export class UpdateFormulaDto {
 // Evaluation DTOs
 export class EvaluateFormulaDto {
   @ApiProperty({
-    description: 'ID of formula to be evaluated.',
-  })
-  formulaId: string;
-
-  @ApiProperty({
     description: 'Variables to be used in the evaluation of the formula.',
+    format: 'object',
+    example: { x: 1, y: 2, z: 3 },
   })
   @IsObject()
   variables: Record<string, number>;

@@ -31,6 +31,19 @@ export class EvaluatorService {
     if (this.hasCycle(graph)) {
       throw new Error('Cyclic dependency detected');
     }
+
+    const variablesMap: Record<string, number> = {};
+    for (const variable of this.independentVariables(graph)) {
+      variablesMap[variable] = 1;
+    }
+
+    try {
+      for (const key in formulaSet) {
+        this.evaluate(formulaSet[key], variablesMap, formulaSet);
+      }
+    } catch (e) {
+      throw new Error(`Malformed formula.`);
+    }
   }
 
   private tokenizer(expression: string): Token[] {

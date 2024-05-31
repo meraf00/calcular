@@ -7,6 +7,11 @@ export interface CreateExpressionDto {
   groupId: string;
 }
 
+export interface EvaluationDto {
+  formulaId: string;
+  variables: Record<string, number>;
+}
+
 export const getExpression = async (id: string): Promise<Expression> => {
   const response = await api.get(`formulas/${id}`);
 
@@ -44,4 +49,16 @@ export const updateExpression = async (
 ) => {
   const response = await api.patch(`formulas/${id}`, { name, formula });
   return response.data;
+};
+
+export const deleteExpression = async (id: string): Promise<void> => {
+  try {
+    const response = await api.delete(`formulas/${id}`);
+  } catch (e: any) {
+    throw new Error(e.response.data.message);
+  }
+};
+
+export const evaluateExpression = async (dto: EvaluationDto) => {
+  return (await api.post(`formulas/${dto.formulaId}/evaluated`, dto)).data;
 };
