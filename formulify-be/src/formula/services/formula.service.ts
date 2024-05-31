@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Formula } from 'src/entities/formula.entity';
+import { Formula } from 'src/formula/entities/formula.entity';
 import { Repository } from 'typeorm';
 import {
   CreateFormulaDto,
